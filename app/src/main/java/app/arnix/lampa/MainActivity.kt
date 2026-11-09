@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun openTorrentLink(url: String, extra: String) = openExternal(url)
         @JavascriptInterface fun openPlayer(url: String, data: String) {
             runOnUiThread {
-                startActivity(Intent(this@MainActivity, PlayerActivity::class.java).putExtra(PlayerActivity.EXTRA_URL, url))
+                startActivity(Intent(this@MainActivity, PlayerActivity::class.java).putExtra(PlayerActivity.EXTRA_URL, url).putExtra(PlayerActivity.EXTRA_DATA, data))
             }
         }
         private fun openExternal(url: String) {
