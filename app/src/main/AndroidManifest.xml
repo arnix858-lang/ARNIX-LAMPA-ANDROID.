@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <application android:allowBackup="true" android:label="ARNIX LAMPA" android:theme="@style/AppTheme" android:usesCleartextTraffic="false">
+    <application android:allowBackup="true" android:label="ARNIX LAMPA" android:theme="@style/AppTheme" android:usesCleartextTraffic="true">
         <activity android:name=".PlayerActivity" android:configChanges="orientation|screenSize|keyboardHidden" android:exported="false" android:screenOrientation="sensor" />
         <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize" android:exported="true">
             <intent-filter>
