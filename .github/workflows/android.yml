@@ -54,6 +54,50 @@ jobs:
           test -s android-app/app/src/main/assets/lampa/app.min.js
           cp lampa-source/LICENSE android-app/app/src/main/assets/lampa/LICENSE-LAMPA-GPL-2.0.txt
 
+      - name: Preinstall Z01 plugin by default
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          index = Path("android-app/app/src/main/assets/lampa/index.html")
+          html = index.read_text(encoding="utf-8")
+          bootstrap = r'''<script>
+          (function () {
+            try {
+              var key = 'plugins';
+              var pluginUrl = 'http://z01.online/online.js';
+              var marker = 'arnix_z01_default_installed';
+              if (localStorage.getItem(marker) === '1') return;
+              var plugins = JSON.parse(localStorage.getItem(key) || '[]');
+              if (!Array.isArray(plugins)) plugins = [];
+              function normalize(url) {
+                return String(url || '').replace('https://', '').replace('http://', '');
+              }
+              var exists = plugins.some(function (item) {
+                var url = typeof item === 'string' ? item : item && item.url;
+                return normalize(url) === normalize(pluginUrl);
+              });
+              if (!exists) {
+                plugins.push({ url: pluginUrl, status: 1 });
+                localStorage.setItem(key, JSON.stringify(plugins));
+              }
+              localStorage.setItem(marker, '1');
+            } catch (error) {
+              console.warn('ARNIX: could not preinstall Z01', error);
+            }
+          })();
+          </script>'''
+          head_start = html.lower().find("<head")
+          if head_start < 0:
+              raise SystemExit("Lampa index.html has no head element")
+          head_end = html.find(">", head_start)
+          if head_end < 0:
+              raise SystemExit("Lampa index.html has malformed head element")
+          html = html[:head_end + 1] + "\\n" + bootstrap + "\\n" + html[head_end + 1:]
+          index.write_text(html, encoding="utf-8")
+          print("Z01 default plugin bootstrap injected")
+          PY
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
