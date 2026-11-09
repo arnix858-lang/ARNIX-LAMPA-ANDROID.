@@ -75,6 +75,9 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun appVersion(): String = "1.0.0-10"
         @JavascriptInterface fun version(): String = "1.0.0"
         @JavascriptInterface fun platform(): String = "android"
+        @JavascriptInterface fun exit() {
+            runOnUiThread { finish() }
+        }
         @JavascriptInterface fun toast(message: String) {
             runOnUiThread { Toast.makeText(this@MainActivity, message.take(180), Toast.LENGTH_SHORT).show() }
         }
