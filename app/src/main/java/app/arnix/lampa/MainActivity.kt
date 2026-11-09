@@ -72,13 +72,21 @@ class MainActivity : AppCompatActivity() {
 
     inner class AndroidBridge {
         @JavascriptInterface fun getLampaURL(): String = ""
-        @JavascriptInterface fun appVersion(): String = "1.0.0-0"
+        @JavascriptInterface fun appVersion(): String = "1.0.0-10"
         @JavascriptInterface fun version(): String = "1.0.0"
         @JavascriptInterface fun platform(): String = "android"
         @JavascriptInterface fun toast(message: String) {
             runOnUiThread { Toast.makeText(this@MainActivity, message.take(180), Toast.LENGTH_SHORT).show() }
         }
-        @JavascriptInterface fun openBrowser(url: String) {
+        @JavascriptInterface fun openBrowser(url: String) = openExternal(url)
+        @JavascriptInterface fun openYoutube(url: String) = openExternal(url)
+        @JavascriptInterface fun openTorrentLink(url: String, extra: String) = openExternal(url)
+        @JavascriptInterface fun openPlayer(url: String, data: String) {
+            runOnUiThread {
+                startActivity(Intent(this@MainActivity, PlayerActivity::class.java).putExtra(PlayerActivity.EXTRA_URL, url))
+            }
+        }
+        private fun openExternal(url: String) {
             runOnUiThread {
                 try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
                 catch (_: Exception) { toast("Не удалось открыть ссылку") }
