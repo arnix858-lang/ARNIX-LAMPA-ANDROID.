@@ -6,8 +6,11 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
+import org.json.JSONObject
 
 class PlayerActivity : AppCompatActivity() {
     private var player: ExoPlayer? = null
@@ -30,13 +33,42 @@ class PlayerActivity : AppCompatActivity() {
         )
         playerView.useController = true
         setContentView(playerView)
+
         val url = intent.getStringExtra(EXTRA_URL).orEmpty()
         if (url.isBlank()) { finish(); return }
-        player = ExoPlayer.Builder(this).build().also { exo ->
-            playerView.player = exo
-            exo.setMediaItem(MediaItem.fromUri(Uri.parse(url)))
-            exo.prepare()
-            exo.playWhenReady = true
+
+        val headers = readHeaders(intent.getStringExtra(EXTRA_DATA).orEmpty())
+        val httpFactory = DefaultHttpDataSource.Factory()
+            .setAllowCrossProtocolRedirects(true)
+            .setDefaultRequestProperties(headers)
+        val mediaSourceFactory = DefaultMediaSourceFactory(httpFactory)
+
+        player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(mediaSourceFactory)
+            .build()
+            .also { exo ->
+                playerView.player = exo
+                exo.setMediaItem(MediaItem.fromUri(Uri.parse(url)))
+                exo.prepare()
+                exo.playWhenReady = true
+            }
+    }
+
+    private fun readHeaders(json: String): Map<String, String> {
+        return try {
+            val root = JSONObject(json)
+            val source = root.optJSONObject("headers")
+                ?: root.optJSONObject("extra")?.optJSONObject("headers")
+                ?: JSONObject()
+            buildMap {
+                val keys = source.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    put(key, source.optString(key))
+                }
+            }
+        } catch (_: Exception) {
+            emptyMap()
         }
     }
 
@@ -54,5 +86,6 @@ class PlayerActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_URL = "stream_url"
+        const val EXTRA_DATA = "stream_data"
     }
 }
