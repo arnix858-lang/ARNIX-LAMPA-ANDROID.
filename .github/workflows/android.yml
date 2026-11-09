@@ -93,7 +93,7 @@ jobs:
           head_end = html.find(">", head_start)
           if head_end < 0:
               raise SystemExit("Lampa index.html has malformed head element")
-          html = html[:head_end + 1] + "\\n" + bootstrap + "\\n" + html[head_end + 1:]
+          html = html[:head_end + 1] + "\n" + bootstrap + "\n" + html[head_end + 1:]
           index.write_text(html, encoding="utf-8")
           print("Z01 default plugin bootstrap injected")
           PY
