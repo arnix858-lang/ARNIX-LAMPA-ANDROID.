@@ -12,22 +12,56 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout ARNIX Android app
         uses: actions/checkout@v4
+        with:
+          path: android-app
+
+      - name: Checkout original Lampa source
+        uses: actions/checkout@v4
+        with:
+          repository: yumata/lampa-source
+          ref: main
+          path: lampa-source
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: lampa-source/package-lock.json
+
+      - name: Build original Lampa web application
+        working-directory: lampa-source
+        run: |
+          npm install --no-audit --no-fund
+          npx gulp pack_github
+
+      - name: Embed Lampa into Android assets
+        run: |
+          mkdir -p android-app/app/src/main/assets/lampa
+          cp -a lampa-source/build/github/lampa/. android-app/app/src/main/assets/lampa/
+          test -s android-app/app/src/main/assets/lampa/index.html
+          test -s android-app/app/src/main/assets/lampa/app.min.js
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+
       - name: Build debug APK
+        working-directory: android-app
         run: gradle assembleDebug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ARNIX-LAMPA-DEBUG-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: android-app/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
