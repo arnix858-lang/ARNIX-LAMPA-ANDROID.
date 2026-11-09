@@ -28,8 +28,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: lampa-source/package-lock.json
 
       - name: Build original Lampa web application
         working-directory: lampa-source
