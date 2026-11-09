@@ -33,7 +33,18 @@ jobs:
         working-directory: lampa-source
         run: |
           npm install --no-audit --no-fund
+          # The upstream pack_github task expects dest/app.js, but does not create it.
+          # Export and run the upstream Rollup merge task first.
+          echo "exports.merge_android = series(merge);" >> gulpfile.js
+          npx gulp merge_android
+          for i in $(seq 1 120); do
+            if test -s dest/app.js; then break; fi
+            sleep 1
+          done
+          test -s dest/app.js
           npx gulp pack_github
+          test -s build/github/lampa/index.html
+          test -s build/github/lampa/app.min.js
 
       - name: Embed Lampa into Android assets
         run: |
